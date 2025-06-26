@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machining Calculator</title>
+	<link rel="icon" type="image/png" href="bulbico.svg">
+    <!-- Tailwind CSS CDN for easy styling and responsiveness -->
+    <xx-script src="https://cdn.tailwindcss.com"></xx-script>
+    <script src="tailwindcss.js"></script>
+    <style>
+        /* Custom font for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Ensure buttons are touch-friendly */
+        .input-button {
+            padding: 0.75rem 1.25rem; /* Ample padding for touch targets */
+            margin: 0.25rem; /* Space between buttons */
+            border-radius: 0.5rem; /* Rounded corners */
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .input-button.selected {
+            background-color: #3b82f6; /* Blue for selected button */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .input-button:active {
+            transform: scale(0.98); /* Slight press effect */
+        }
+        .output-box {
+            background-color: #e2e8f0; /* Lighter gray for output */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            min-height: 2.5rem; /* Ensure consistent height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+fraction {
+  display: inline-grid;
+
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+
+  font-size: 0.8em; // You can change fraction size here. I recommend 0.5em ~ 0.8em
+  vertical-align: top;
+}
+
+numer {
+  border-bottom: 1px solid;
+}
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg lg:max-w-xl">
+        <div class="flex items-center justify-center mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800">Machining Calculator</h1>
+        </div>
+
+        <!-- Input Section -->
+        <div class="mb-8 space-y-6">
+            <!-- Tool Diameter Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Tool Diameter (in):</label>
+                <div id="diameter-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.125"><fraction> <numer>1</numer>8</fraction>&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.25"><fraction> <numer>1</numer>4</fraction>&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.375"><fraction> <numer>3</numer>8</fraction>&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.5"><fraction> <numer>1</numer>2</fraction>&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.625"><fraction> <numer>5</numer>8</fraction>&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.75"><fraction> <numer>3</numer>4</fraction>&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.875"><fraction> <numer>7</numer>8</fraction>&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="1">1&quot;<button>
+                </div>
+            </div>
+
+            <!-- Material Type Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Material Type:</label>
+                <div id="material-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="aluminum">Aluminum</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="steel">Steel</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="stainless">Stainless</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="brass">Brass</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="plastic">Plastic</button>
+                </div>
+            </div>
+
+            <!-- Number of Flutes Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Number of Flutes:</label>
+                <div id="flutes-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="2">2 Flutes</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="3">3 Flutes</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="4">4 Flutes</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="6">6 Flutes</button>
+                </div>
+            </div>
+
+            <!-- Machine Type Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Machine Type:</label>
+                <div id="machine-type-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="bridgeport">Bridgeport</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="tormach">Tormach</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="other">Other</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Output Section -->
+        <h2 class="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-4">Calculated Values</h2>
+
+        <!-- Traditional Calculations Row -->
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2" style="margin-bottom:0px">General Milling (Traditional)</h3>
+        <h4 class="text-sm sm:text-sm text-gray-700 mb-2">Cut with steopver of 40-60% of tool</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <!-- RPM Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Calculated RPM:</label>
+                <div id="output-rpm" class="output-box text-blue-700 font-bold">0</div>
+            </div>
+
+            <!-- Feed Rate Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Calculated Feed Rate (IPM):</label>
+                <div id="output-feedrate" class="output-box text-blue-700 font-bold">0</div>
+            </div>
+        </div>
+
+        <!-- Slotting/First Pass Calculations Row -->
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2" style="margin-bottom:0px">Slotting (Conservative)</h3>
+        <h4 class="text-sm sm:text-sm text-gray-700 mb-2">First pass, cutting with whole tool</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Slotting RPM Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Slotting RPM:</label>
+                <div id="output-rpm-slotting" class="output-box text-red-700 font-bold">0</div>
+            </div>
+
+            <!-- Slotting Feed Rate Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Slotting Feed Rate (IPM):</label>
+                <div id="output-feedrate-slotting" class="output-box text-red-700 font-bold">0</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Define default SFM (Surface Feet per Minute) and IPT (Inches Per Tooth) values
+        // These are simplified for demonstration and would typically come from manufacturer charts.
+        const materialProperties = {
+            aluminum: { sfm: 200, ipt: 0.002 },
+            stainless: { sfm: 72, ipt: 0.001 },
+            steel: { sfm: 90, ipt: 0.0007 },
+            brass: { sfm: 150, ipt: 0.002 },
+            plastic: { sfm: 400, ipt: 0.002 }
+        };
+
+        // Global reduction factors for slotting/first pass, applied universally to all materials
+        const globalSfmReductionFactor = 0.7; // Example: Reduce SFM by 30% for slotting
+        const globalIptReductionFactor = 0.8; // Example: Reduce IPT by 80% for slotting
+
+
+        // Machine type limitations
+        const machineLimitations = {
+            bridgeport: { rpmCap: 2000 }, // RPM max for Bridgeport
+            tormach: { rpmCap: 4700 }, // RPM capped at 4700 for Tormach
+            other: { rpmCap: Infinity } // "Other" for effectively unlimited RPM
+        };
+
+   // Variables to store selected input values
+        let selectedDiameter = 0.25; // Default diameter
+        let selectedMaterial = 'aluminum'; // Default material
+        let selectedFlutes = 2; // Default flutes
+        let selectedMachineType = 'bridgeport'; // Set default to match the selected button in HTML
+
+        // Function to update the selected state of buttons within a group
+        function updateButtonSelection(containerId, selectedValue) {
+            const container = document.getElementById(containerId);
+            const buttons = container.querySelectorAll('button');
+            buttons.forEach(button => {
+                if (button.dataset.value === String(selectedValue)) {
+                    button.classList.add('selected');
+                } else {
+                    button.classList.remove('selected');
+                }
+            });
+        }
+
+        // Function to perform calculations and update outputs
+        function updateOutputs() {
+            // Get properties for the selected material
+            const material = materialProperties[selectedMaterial];
+            const sfm = material.sfm;
+            const ipt = material.ipt;
+
+            // Get RPM cap for the selected machine type
+            const rpmCap = machineLimitations[selectedMachineType].rpmCap;
+
+            // --- Traditional Milling Calculations ---
+            // Calculate base RPM
+            const baseCalculatedRPM = (sfm * 3.82) / selectedDiameter;
+            // Apply RPM cap
+            const finalCalculatedRPM = Math.min(baseCalculatedRPM, rpmCap);
+            document.getElementById('output-rpm').textContent = finalCalculatedRPM.toFixed(0);
+
+            // Calculate Feed Rate using the final (potentially capped) RPM
+            const calculatedFeedRate = finalCalculatedRPM * selectedFlutes * ipt;
+            document.getElementById('output-feedrate').textContent = calculatedFeedRate.toFixed(1);
+
+            // --- Slotting/First Pass Calculations (Conservative) ---
+            // Apply the global reduction factors to SFM and IPT for slotting
+            const sfmSlotting = sfm * globalSfmReductionFactor;
+            const iptSlotting = ipt * globalIptReductionFactor;
+
+            // Calculate base Slotting RPM
+            const baseCalculatedRPMSlotting = (sfmSlotting * 3.82) / selectedDiameter;
+            // Apply RPM cap to slotting RPM
+            const finalCalculatedRPMSlotting = Math.min(baseCalculatedRPMSlotting, rpmCap);
+            document.getElementById('output-rpm-slotting').textContent = finalCalculatedRPMSlotting.toFixed(0);
+
+            // Calculate Slotting Feed Rate using the final (potentially capped) Slotting RPM
+            const calculatedFeedRateSlotting = finalCalculatedRPMSlotting * selectedFlutes * iptSlotting;
+            document.getElementById('output-feedrate-slotting').textContent = calculatedFeedRateSlotting.toFixed(1);
+        }
+
+        // Event listener for Tool Diameter buttons
+        document.getElementById('diameter-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                selectedDiameter = parseFloat(event.target.dataset.value);
+                updateButtonSelection('diameter-input', selectedDiameter);
+                updateOutputs();
+            }
+        });
+
+        // Event listener for Material Type buttons
+        document.getElementById('material-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                selectedMaterial = event.target.dataset.value;
+                updateButtonSelection('material-input', selectedMaterial);
+                updateOutputs();
+            }
+        });
+
+        // Event listener for Number of Flutes buttons
+        document.getElementById('flutes-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                selectedFlutes = parseInt(event.target.dataset.value);
+                updateButtonSelection('flutes-input', selectedFlutes);
+                updateOutputs();
+            }
+        });
+
+        // Event listener for Machine Type buttons
+        document.getElementById('machine-type-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {selectedMachineType
+                selectedMachineType = event.target.dataset.value;
+                updateButtonSelection('machine-type-input', selectedMachineType);
+                updateOutputs();
+            }
+        });
+
+        // Initial setup and calculation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial button selections based on default values
+            updateButtonSelection('diameter-input', selectedDiameter);
+            updateButtonSelection('material-input', selectedMaterial);
+            updateButtonSelection('flutes-input', selectedFlutes);
+            updateButtonSelection('machine-type-input', selectedMachineType); // Set initial machine type selection
+            updateOutputs(); // Perform initial calculation
+        });
+    </script>
+</body>
+</html>
+
