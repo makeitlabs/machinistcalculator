@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machining Calculator</title>
+    <!-- Custom Favicon -->
+    <link rel="icon" type="image/png" href="bulbico.svg">
+    <!-- Tailwind CSS CDN for easy styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Ensure buttons are touch-friendly */
+        .input-button {
+            padding: 0.75rem 1.25rem; /* Ample padding for touch targets */
+            margin: 0.25rem; /* Space between buttons */
+            border-radius: 0.5rem; /* Rounded corners */
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .input-button.selected {
+            background-color: #3b82f6; /* Blue for selected button */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .input-button:active {
+            transform: scale(0.98); /* Slight press effect */
+        }
+        .output-box {
+            background-color: #e2e8f0; /* Lighter gray for output */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            min-height: 2.5rem; /* Ensure consistent height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem; /* text-lg */
+        }
+        /* Style for the SVG image */
+        .title-icon {
+            width: 2rem; /* Matches w-8 from original SVG */
+            height: 2rem; /* Matches h-8 from original SVG */
+            margin-right: 0.5rem; /* Matches mr-2 from original SVG */
+            vertical-align: middle; /* Ensures vertical alignment with text */
+        }
+        /* Slider styling */
+        input[type="range"] {
+            -webkit-appearance: none; /* Remove default styling */
+            width: 100%;
+            height: 8px; /* Thinner slider track */
+            background: #cbd5e1; /* Gray track */
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+            margin-top: 0.75rem; /* Space above slider */
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6; /* Blue thumb */
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        /* Modal specific styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 90%;
+            width: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg lg:max-w-xl xx-relative">
+        <!-- "Basic" Button -->
+        <a href="mach.html"
+           class="absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">
+            Basic
+        </a>
+
+        <!-- Title with SVG Icon -->
+        <div class="flex items-center justify-center mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800">Machining Calculator</h1>
+        </div>
+
+        <!-- Input Section -->
+        <div class="mb-8 space-y-6">
+            <!-- Tool Diameter Input (Slider) -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Tool Diameter:</label>
+                <div class="flex items-center justify-between mb-2">
+                    <span id="diameter-display" class="text-blue-700 font-bold text-lg">0.25"</span>
+                    <button id="diameter-unit-btn" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded-md">Change Unit</button>
+                </div>
+                <input type="range" id="diameter-slider" min="0.0625" max="1.0" step="0.0625" value="0.25">
+            </div>
+
+            <!-- Material Type Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Material Type (Select to set SFM/IPT defaults):</label>
+                <div id="material-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="aluminum">Aluminum</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="stainless">Stainless</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="steel">Steel</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="brass">Brass</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="plastic">Plastic</button>
+                </div>
+            </div>
+
+            <!-- SFM Input (Slider) -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Surface Feet per Minute (SFM):</label>
+                <span id="sfm-display" class="text-blue-700 font-bold text-lg">600 SFM</span>
+                <input type="range" id="sfm-slider" min="30" max="1000" step="1" value="600">
+            </div>
+
+            <!-- IPT Input (Slider) -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Inches Per Tooth (IPT):</label>
+                <span id="ipt-display" class="text-blue-700 font-bold text-lg">0.002"</span>
+                <!-- Initial IPT slider values are scaled -->
+                <input type="range" id="ipt-slider" min="5" max="40" step="1" value="20">
+            </div>
+
+            <!-- Number of Flutes Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Number of Flutes:</label>
+                <div id="flutes-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="2">2 Flutes</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="3">3 Flutes</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="4">4 Flutes</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="6">6 Flutes</button>
+                </div>
+            </div>
+
+            <!-- Machine Type Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Machine Type:</label>
+                <div id="machine-type-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="bridgeport">Bridgeport</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="tormach">Tormach</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="other">Other</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Section -->
+        <h2 class="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-4">Calculated Values</h2>
+
+        <!-- Traditional Calculations Row -->
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">General Milling (Traditional)</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <!-- RPM Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Calculated RPM:</label>
+                <div id="output-rpm" class="output-box text-blue-700 font-bold">0</div>
+            </div>
+
+            <!-- Feed Rate Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Calculated Feed Rate (IPM):</label>
+                <div id="output-feedrate" class="output-box text-blue-700 font-bold">0</div>
+            </div>
+        </div>
+
+        <!-- Slotting/First Pass Calculations Row -->
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Slotting / First Pass (Conservative)</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Slotting RPM Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Slotting RPM:</label>
+                <div id="output-rpm-slotting" class="output-box text-red-700 font-bold">0</div>
+            </div>
+
+            <!-- Slotting Feed Rate Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Slotting Feed Rate (IPM):</label>
+                <div id="output-feedrate-slotting" class="output-box text-red-700 font-bold">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Selection Modal -->
+    <div id="unit-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Select Diameter Unit</h3>
+            <div class="flex justify-center space-x-4">
+                <button class="input-button bg-blue-500 hover:bg-blue-600 text-white" data-unit="inches">Inches</button>
+                <button class="input-button bg-gray-300 hover:bg-gray-400 text-gray-800" data-unit="millimeters">Millimeters</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Scaling factor for IPT values to avoid floating point issues with slider
+        const IPT_SCALE_FACTOR = 10000;
+
+        // Define SFM (Surface Feet per Minute) and IPT (Inches Per Tooth) values
+        // IPT values here are ALREADY SCALED by IPT_SCALE_FACTOR
+        const materialProperties = {
+            aluminum: {
+                sfm: { default: 200, min: 100, max: 400 },
+                ipt: { default: 20, min: 10, max: 40 } // 0.002 * 10000 = 20
+            },
+            stainless: {
+                sfm: { default: 72, min: 30, max: 150 },
+                ipt: { default: 10, min: 5, max: 20 } // 0.001 * 10000 = 10, 0.0005 * 10000 = 5
+            },
+            steel: {
+                sfm: { default: 90, min: 45, max: 180 },
+                ipt: { default: 7, min: 3, max: 15 } // 0.0007 * 10000 = 7, 0.0003 * 10000 = 3
+            },
+            brass: {
+                sfm: { default: 150, min: 75, max: 300 },
+                ipt: { default: 20, min: 10, max: 40 } // 0.002 * 10000 = 20
+            },
+            plastic: {
+                sfm: { default: 400, min: 200, max: 800 },
+                ipt: { default: 20, min: 10, max: 40 } // 0.002 * 10000 = 20
+            }
+        };
+
+        // Global reduction factors for slotting/first pass, applied universally to all materials
+        const globalSfmReductionFactor = 0.7;
+        const globalIptReductionFactor = 0.5;
+
+        // Machine type limitations
+        const machineLimitations = {
+            bridgeport: { rpmCap: 2000 },
+            tormach: { rpmCap: 4700 },
+            other: { rpmCap: Infinity }
+        };
+
+        // UI elements
+        const diameterSlider = document.getElementById('diameter-slider');
+        const diameterDisplay = document.getElementById('diameter-display');
+        const diameterUnitBtn = document.getElementById('diameter-unit-btn');
+        const sfmSlider = document.getElementById('sfm-slider');
+        const sfmDisplay = document.getElementById('sfm-display');
+        const iptSlider = document.getElementById('ipt-slider');
+        const iptDisplay = document.getElementById('ipt-display');
+
+        const unitModal = document.getElementById('unit-modal');
+        const unitSelectionButtons = unitModal.querySelectorAll('button');
+
+        // Variables to store selected input values
+        let selectedDiameter = 0.25; // Default diameter in inches
+        let selectedDiameterUnit = 'inches'; // Default unit
+        let selectedMaterial = 'aluminum'; // Default material
+        let selectedFlutes = 2; // Default flutes
+        let selectedMachineType = 'bridgeport'; // Default machine type
+
+        // Function to update the selected state of buttons within a group
+        function updateButtonSelection(containerId, selectedValue) {
+            const container = document.getElementById(containerId);
+            const buttons = container.querySelectorAll('button');
+            buttons.forEach(button => {
+                if (button.dataset.value === String(selectedValue)) {
+                    button.classList.add('selected');
+                } else {
+                    button.classList.remove('selected');
+                }
+            });
+        }
+
+        // Conversion factor from mm to inches (1 inch = 25.4 mm)
+        const MM_TO_INCH = 1 / 25.4;
+        const INCH_TO_MM = 25.4;
+
+        // Function to set diameter slider range and value based on unit
+        function setDiameterSliderRangeAndValue() {
+            if (selectedDiameterUnit === 'inches') {
+                diameterSlider.min = 0.0625; // 1/16 inch
+                diameterSlider.max = 1.0;
+                diameterSlider.step = 0.0625; // Coarse increments for inches
+                // Ensure current diameter is converted and snapped to step
+                selectedDiameter = Math.round(selectedDiameter / diameterSlider.step) * diameterSlider.step;
+                selectedDiameter = parseFloat(selectedDiameter.toFixed(4)); // Fix floating point issues
+            } else { // millimeters
+                diameterSlider.min = 1.0;
+                diameterSlider.max = 30.0;
+                diameterSlider.step = 0.1;
+                // Convert current diameter to mm if it was in inches
+                selectedDiameter = parseFloat((selectedDiameter * INCH_TO_MM).toFixed(1));
+            }
+            // Ensure the selectedDiameter is within the new range
+            selectedDiameter = Math.max(parseFloat(diameterSlider.min), Math.min(parseFloat(diameterSlider.max), selectedDiameter));
+            diameterSlider.value = selectedDiameter;
+            diameterDisplay.textContent = `${selectedDiameter}${selectedDiameterUnit === 'inches' ? '"' : 'mm'}`;
+            updateOutputs();
+        }
+
+        // Function to perform calculations and update outputs
+        function updateOutputs() {
+            // Get properties for the selected material
+            const material = materialProperties[selectedMaterial];
+            const currentSFM = parseFloat(sfmSlider.value);
+            // Get current IPT from slider and un-scale it
+            const currentIPT = parseFloat(iptSlider.value) / IPT_SCALE_FACTOR;
+
+            // Get RPM cap for the selected machine type
+            const rpmCap = machineLimitations[selectedMachineType].rpmCap;
+
+            // Ensure diameter is in inches for calculations
+            let diameterInInches = selectedDiameter;
+            if (selectedDiameterUnit === 'millimeters') {
+                diameterInInches = selectedDiameter * MM_TO_INCH;
+            }
+
+            // --- Traditional Milling Calculations ---
+            // Calculate base RPM
+            const baseCalculatedRPM = (currentSFM * 3.82) / diameterInInches;
+            // Apply RPM cap
+            const finalCalculatedRPM = Math.min(baseCalculatedRPM, rpmCap);
+            document.getElementById('output-rpm').textContent = finalCalculatedRPM.toFixed(0);
+
+            // Calculate Feed Rate using the final (potentially capped) RPM
+            const calculatedFeedRate = finalCalculatedRPM * selectedFlutes * currentIPT;
+            document.getElementById('output-feedrate').textContent = calculatedFeedRate.toFixed(3);
+
+            // --- Slotting/First Pass Calculations (Conservative) ---
+            // Apply the global reduction factors to SFM and IPT for slotting
+            const sfmSlotting = currentSFM * globalSfmReductionFactor;
+            const iptSlotting = currentIPT * globalIptReductionFactor;
+
+            // Calculate base Slotting RPM
+            const baseCalculatedRPMSlotting = (sfmSlotting * 3.82) / diameterInInches;
+            // Apply RPM cap to slotting RPM
+            const finalCalculatedRPMSlotting = Math.min(baseCalculatedRPMSlotting, rpmCap);
+            document.getElementById('output-rpm-slotting').textContent = finalCalculatedRPMSlotting.toFixed(0);
+
+            // Calculate Slotting Feed Rate using the final (potentially capped) Slotting RPM
+            const calculatedFeedRateSlotting = finalCalculatedRPMSlotting * selectedFlutes * iptSlotting;
+            document.getElementById('output-feedrate-slotting').textContent = calculatedFeedRateSlotting.toFixed(3);
+
+            // Log values for debugging
+            console.log('--- Current Outputs ---');
+            console.log(`Selected Material: ${selectedMaterial}`);
+            console.log(`SFM Slider Value: ${sfmSlider.value}, Min: ${sfmSlider.min}, Max: ${sfmSlider.max}`);
+            console.log(`IPT Slider Value (Scaled): ${iptSlider.value}, Min: ${iptSlider.min}, Max: ${iptSlider.max}, Step: ${iptSlider.step}`);
+            console.log(`IPT Actual Value: ${currentIPT}`);
+            console.log('-----------------------');
+        }
+
+        // --- Event Listeners ---
+
+        // Tool Diameter Slider
+        diameterSlider.addEventListener('input', () => {
+            // Re-snap to step to avoid floating point inaccuracies, especially for inches
+            if (selectedDiameterUnit === 'inches') {
+                selectedDiameter = Math.round(parseFloat(diameterSlider.value) / diameterSlider.step) * diameterSlider.step;
+                selectedDiameter = parseFloat(selectedDiameter.toFixed(4));
+            } else {
+                selectedDiameter = parseFloat(diameterSlider.value);
+            }
+            diameterDisplay.textContent = `${selectedDiameter}${selectedDiameterUnit === 'inches' ? '"' : 'mm'}`;
+            updateOutputs();
+        });
+
+        // Diameter Unit Button (opens modal)
+        diameterUnitBtn.addEventListener('click', () => {
+            unitModal.classList.remove('hidden');
+        });
+
+        // Modal Unit Selection Buttons
+        unitSelectionButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const newUnit = event.target.dataset.unit;
+                if (selectedDiameterUnit !== newUnit) {
+                    selectedDiameterUnit = newUnit;
+                    setDiameterSliderRangeAndValue(); // Adjust slider range and value
+                }
+                unitModal.classList.add('hidden'); // Hide modal after selection
+                // Update selected state of unit buttons within modal
+                unitSelectionButtons.forEach(btn => {
+                    if (btn.dataset.unit === newUnit) {
+                        btn.classList.add('bg-blue-500', 'text-white');
+                        btn.classList.remove('bg-gray-300', 'text-gray-800');
+                    } else {
+                        btn.classList.remove('bg-blue-500', 'text-white');
+                        btn.classList.add('bg-gray-300', 'text-gray-800');
+                    }
+                });
+            });
+        });
+
+        // Material Type Buttons (set SFM/IPT defaults and update sliders)
+        document.getElementById('material-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                selectedMaterial = event.target.dataset.value;
+                updateButtonSelection('material-input', selectedMaterial);
+
+                // Set SFM slider to default for selected material and update display
+                sfmSlider.min = materialProperties[selectedMaterial].sfm.min;
+                sfmSlider.max = materialProperties[selectedMaterial].sfm.max;
+                sfmSlider.value = materialProperties[selectedMaterial].sfm.default;
+                sfmDisplay.textContent = `${sfmSlider.value} SFM`;
+
+                // Set IPT slider to default for selected material and update display (using scaled values)
+                iptSlider.min = materialProperties[selectedMaterial].ipt.min;
+                iptSlider.max = materialProperties[selectedMaterial].ipt.max;
+                iptSlider.step = 1; // Step is 1 for scaled integer values
+                iptSlider.value = materialProperties[selectedMaterial].ipt.default;
+                iptDisplay.textContent = `${(parseFloat(iptSlider.value) / IPT_SCALE_FACTOR).toFixed(4)}"`
+                
+                // Debug log for IPT slider properties after material change
+                console.log(`Debug (Material Change): IPT Slider properties: min=${iptSlider.min}, max=${iptSlider.max}, step=${iptSlider.step}, value=${iptSlider.value}`);
+                
+                updateOutputs();
+            }
+        });
+
+        // SFM Slider
+        sfmSlider.addEventListener('input', () => {
+            sfmDisplay.textContent = `${sfmSlider.value} SFM`;
+            updateOutputs();
+        });
+
+        // IPT Slider
+        iptSlider.addEventListener('input', () => {
+            // Display the un-scaled value
+            iptDisplay.textContent = `${(parseFloat(iptSlider.value) / IPT_SCALE_FACTOR).toFixed(4)}"`
+            updateOutputs();
+        });
+
+        // Number of Flutes Buttons
+        document.getElementById('flutes-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                selectedFlutes = parseInt(event.target.dataset.value);
+                updateButtonSelection('flutes-input', selectedFlutes);
+                updateOutputs();
+            }
+        });
+
+        // Machine Type Buttons
+        document.getElementById('machine-type-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                selectedMachineType = event.target.dataset.value;
+                updateButtonSelection('machine-type-input', selectedMachineType);
+                updateOutputs();
+            }
+        });
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial button selections for flutes and machine type
+            updateButtonSelection('flutes-input', selectedFlutes);
+            updateButtonSelection('machine-type-input', selectedMachineType);
+            
+            // Set initial diameter slider range and value display
+            setDiameterSliderRangeAndValue();
+            
+            // Set initial SFM and IPT slider values and displays based on default material (aluminum)
+            sfmSlider.min = materialProperties[selectedMaterial].sfm.min;
+            sfmSlider.max = materialProperties[selectedMaterial].sfm.max;
+            sfmSlider.value = materialProperties[selectedMaterial].sfm.default;
+            sfmDisplay.textContent = `${sfmSlider.value} SFM`;
+
+            // Initialize IPT slider with scaled values
+            iptSlider.min = materialProperties[selectedMaterial].ipt.min;
+            iptSlider.max = materialProperties[selectedMaterial].ipt.max;
+            iptSlider.step = 1; // Step is 1 for scaled values
+            iptSlider.value = materialProperties[selectedMaterial].ipt.default;
+            iptDisplay.textContent = `${(parseFloat(iptSlider.value) / IPT_SCALE_FACTOR).toFixed(4)}"`
+
+            // Debug log for initial IPT slider properties
+            console.log(`Debug: Initial IPT slider set to Min: ${iptSlider.min}, Max: ${iptSlider.max}, Default: ${iptSlider.value}`);
+
+            updateButtonSelection('material-input', selectedMaterial); // Select initial material button
+            updateOutputs(); // Perform initial calculation
+        });
+    </script>
+</body>
+</html>
