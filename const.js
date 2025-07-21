@@ -33,52 +33,64 @@ const materialProperties = {
         // Specific diameter-dependent data (SFM and IPT)
         // IPT values here are UN-SCALED, will be scaled when used in calculations
         diameterData: [
-            { diameterInch: 0.019685, sfm: 500, ipt: 0.00015 }, // ~0.5mm
-            { diameterInch: 0.03937, sfm: 450, ipt: 0.0002 },  // ~1mm
-            { diameterInch: 0.0625, sfm: 400, ipt: 0.00012 },  // 1/16"
-            { diameterInch: 0.07874, sfm: 350, ipt: 0.0003 },  // ~2mm
-            { diameterInch: 0.11811, sfm: 300, ipt: 0.0005 },  // ~3mm
-            { diameterInch: 0.23622, sfm: 250, ipt: 0.001 },  // ~6mm
-            { diameterInch: 0.47244, sfm: 200, ipt: 0.0020 },  // ~12mm
-            { diameterInch: 0.7874, sfm: 200, ipt: 0.002 }    // ~20mm
+            // { diameterInch: 0.019685, sfm: 500, ipt: 0.00015 }, // ~0.5mm
+            // { diameterInch: 0.03937, sfm: 550, ipt: 0.0002 },  // ~1mm - SFM increases
+            // { diameterInch: 0.0625, sfm: 600, ipt: 0.00025 },  // 1/16" - SFM peaks
+            // { diameterInch: 0.07874, sfm: 550, ipt: 0.0003 },  // ~2mm - SFM starts to decrease
+            { diameterInch: 0.07874, sfm: 400, ipt: 0.00013 },  // ~2mm
+            //{ diameterInch: 0.11811, sfm: 300, ipt: 0.0005 },  // ~3mm
+            //{ diameterInch: 0.23622, sfm: 250, ipt: 0.0010 },  // ~6mm
+            //{ diameterInch: 0.47244, sfm: 200, ipt: 0.0020 },  // ~12mm
+            //{ diameterInch: 0.125, sfm: 300, ipt: 0.0018 }    ,
+            { diameterInch: 0.25, sfm: 200, ipt: 0.0020 }    
         ] // Removed .sort() - assuming data is pre-sorted
     },
     stainless: {
         sfmSliderRange: { default: 72, min: 30, max: 250 },
         iptSliderRange: { default: 10, min: 1, max: 20 },
         diameterData: [
-            { diameterInch: 0.019685, sfm: 120, ipt: 0.00008 },
-            { diameterInch: 0.03937, sfm: 100, ipt: 0.0001 },
-            { diameterInch: 0.0625, sfm: 90, ipt: 0.00015 },
-            { diameterInch: 0.07874, sfm: 80, ipt: 0.0002 },
-            { diameterInch: 0.15748, sfm: 70, ipt: 0.0003 }, // 4mm
-            { diameterInch: 0.23622, sfm: 65, ipt: 0.0004 },
-            { diameterInch: 0.3937, sfm: 60, ipt: 0.0005 }, // 10mm
-            { diameterInch: 0.7874, sfm: 55, ipt: 0.0006 }
+            //{ diameterInch: 0.019685, sfm: 120, ipt: 0.00008 },
+            //{ diameterInch: 0.03937, sfm: 100, ipt: 0.0001 },
+            //{ diameterInch: 0.0625, sfm: 90, ipt: 0.00015 },
+            { diameterInch: 0.07874, sfm: 90, ipt: 0.0002 }, // 2mm
+            //{ diameterInch: 0.15748, sfm: 80, ipt: 0.0003 }, // 4mm
+            //{ diameterInch: 0.23622, sfm: 65, ipt: 0.0004 },
+            { diameterInch: 0.25, sfm: 72, ipt: 0.001 }, 
+            { diameterInch: 0.7874, sfm: 72, ipt: 0.001 }
         ] // Removed .sort() - assuming data is pre-sorted
     },
     steel: {
         sfmSliderRange: { default: 90, min: 40, max: 200 },
         iptSliderRange: { default: 7, min: 1, max: 15 },
         diameterData: [
-            { diameterInch: 0.019685, sfm: 100, ipt: 0.00005 },
-            { diameterInch: 0.03937, sfm: 80, ipt: 0.0001 },
-            { diameterInch: 0.0625, sfm: 70, ipt: 0.00012 },
-            { diameterInch: 0.07874, sfm: 60, ipt: 0.00015 },
-            { diameterInch: 0.15748, sfm: 55, ipt: 0.0002 },
-            { diameterInch: 0.23622, sfm: 50, ipt: 0.0003 },
-            { diameterInch: 0.3937, sfm: 48, ipt: 0.0004 },
-            { diameterInch: 0.7874, sfm: 45, ipt: 0.0005 }
-        ] // Removed .sort() - assuming data is pre-sorted
+            //{ diameterInch: 0.019685, sfm: 100, ipt: 0.00005 },
+            //{ diameterInch: 0.03937, sfm: 80, ipt: 0.0001 },
+            //{ diameterInch: 0.0625, sfm: 70, ipt: 0.00012 },
+            { diameterInch: 0.07874, sfm: 120, ipt: 0.00015 }, // 2mm
+            { diameterInch: 0.15748, sfm: 110, ipt: 0.0002 }, // 4mm
+            { diameterInch: 0.23622, sfm: 100, ipt: 0.0003 },
+            { diameterInch: 0.3937, sfm: 90, ipt: 0.0007 },
+            { diameterInch: 0.7874, sfm: 90, ipt: 0.0007 }
+        ] 
     },
     brass: {
         // For materials without specific diameter data, use the default from their slider ranges
         sfmSliderRange: { default: 150, min: 75, max: 300 },
-        iptSliderRange: { default: 20, min: 10, max: 40 } // Scaled IPT
+        iptSliderRange: { default: 20, min: 10, max: 40 }, // Scaled IPT
+        diameterData: [
+            { diameterInch: 0.07874, sfm: 190, ipt: 0.0005 }, // 2mm
+            { diameterInch: 0.15748, sfm: 170, ipt: 0.001 }, // 4mm
+            { diameterInch: 0.75, sfm: 150, ipt: 0.002 }
+        ] 
     },
     plastic: {
         sfmSliderRange: { default: 400, min: 200, max: 800 },
-        iptSliderRange: { default: 20, min: 10, max: 40 } // Scaled IPT
+        iptSliderRange: { default: 20, min: 10, max: 40 }, // Scaled IPT
+        diameterData: [
+            { diameterInch: 0.07874, sfm: 600, ipt: 0.0005 }, // 2mm
+            { diameterInch: 0.15748, sfm: 500, ipt: 0.001 }, // 4mm
+            { diameterInch: 0.75, sfm: 400, ipt: 0.002 }
+        ] 
     }
 };
 
