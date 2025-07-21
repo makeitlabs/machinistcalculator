@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="bulbico.svg">
     <!-- Tailwind CSS CDN for easy styling and responsiveness -->
     <script src="tailwind.js"></script>
+    <script src="const.js"></script>
     <style>
         /* Custom font for better aesthetics */
         body {
@@ -246,11 +247,10 @@
 
     <script>
         // Scaling factor for IPT values to avoid floating point issues with slider
-        const IPT_SCALE_FACTOR = 10000;
 
         // Define SFM (Surface Feet per Minute) and IPT (Inches Per Tooth) values
         // IPT values here are ALREADY SCALED by IPT_SCALE_FACTOR
-        const materialProperties = {
+        const OLDmaterialProperties = {
             aluminum: {
                 sfm: { default: 200, min: 100, max: 400 },
                 ipt: { default: 20, min: 10, max: 40 } // 0.002 * 10000 = 20
@@ -274,11 +274,11 @@
         };
 
         // Global reduction factors for slotting/first pass, applied universally to all materials
-        const globalSfmReductionFactor = 0.7;
-        const globalIptReductionFactor = 0.5;
+        const OLDglobalSfmReductionFactor = 0.7;
+        const OLDglobalIptReductionFactor = 0.5;
 
         // Machine type limitations
-        const machineLimitations = {
+        const OLDmachineLimitations = {
             bridgeport: { rpmCap: 2000 },
             tormach: { rpmCap: 4700 },
             other: { rpmCap: Infinity }
@@ -343,12 +343,17 @@
             updateOutputs();
         }
 
-        // Function to perform calculations and update outputs
+                                  // Function to perform calculations and update outputs
         function updateOutputs() {
-            // Get properties for the selected material
-            const material = materialProperties[selectedMaterial];
+            // Get diameter-adjusted SFM and IPT based on current selections
+            const diameterAdjustedProps = getDiameterAdjustedProperties(selectedMaterial, selectedDiameter);
+            const baseSFM = diameterAdjustedProps.sfm;
+            const baseIPT = diameterAdjustedProps.ipt; // This is the unscaled IPT
+
+            // Get current SFM and IPT from sliders (manual overrides)
+            // If the user has manually adjusted the slider, use that value.
+            // Otherwise, use the diameter-adjusted base value.
             const currentSFM = parseFloat(sfmSlider.value);
-            // Get current IPT from slider and un-scale it
             const currentIPT = parseFloat(iptSlider.value) / IPT_SCALE_FACTOR;
 
             // Get RPM cap for the selected machine type
@@ -362,14 +367,14 @@
 
             // --- Traditional Milling Calculations ---
             // Calculate base RPM
-            const baseCalculatedRPM = (currentSFM * 3.82) / diameterInInches;
+            const calculatedRPM_Traditional = (currentSFM * 3.82) / diameterInInches;
             // Apply RPM cap
-            const finalCalculatedRPM = Math.min(baseCalculatedRPM, rpmCap);
-            document.getElementById('output-rpm').textContent = finalCalculatedRPM.toFixed(0);
+            const finalCalculatedRPM_Traditional = Math.min(calculatedRPM_Traditional, rpmCap);
+            document.getElementById('output-rpm').textContent = finalCalculatedRPM_Traditional.toFixed(0);
 
             // Calculate Feed Rate using the final (potentially capped) RPM
-            const calculatedFeedRate = finalCalculatedRPM * selectedFlutes * currentIPT;
-            document.getElementById('output-feedrate').textContent = calculatedFeedRate.toFixed(3);
+            const calculatedFeedRate_Traditional = finalCalculatedRPM_Traditional * selectedFlutes * currentIPT;
+            document.getElementById('output-feedrate').textContent = calculatedFeedRate_Traditional.toFixed(3);
 
             // --- Slotting/First Pass Calculations (Conservative) ---
             // Apply the global reduction factors to SFM and IPT for slotting
@@ -377,9 +382,9 @@
             const iptSlotting = currentIPT * globalIptReductionFactor;
 
             // Calculate base Slotting RPM
-            const baseCalculatedRPMSlotting = (sfmSlotting * 3.82) / diameterInInches;
+            const calculatedRPMSlotting = (sfmSlotting * 3.82) / diameterInInches;
             // Apply RPM cap to slotting RPM
-            const finalCalculatedRPMSlotting = Math.min(baseCalculatedRPMSlotting, rpmCap);
+            const finalCalculatedRPMSlotting = Math.min(calculatedRPMSlotting, rpmCap);
             document.getElementById('output-rpm-slotting').textContent = finalCalculatedRPMSlotting.toFixed(0);
 
             // Calculate Slotting Feed Rate using the final (potentially capped) Slotting RPM
@@ -389,9 +394,15 @@
             // Log values for debugging
             console.log('--- Current Outputs ---');
             console.log(`Selected Material: ${selectedMaterial}`);
+            console.log(`Selected Diameter: ${selectedDiameter}${selectedDiameterUnit === 'inches' ? '"' : 'mm'}`);
+            console.log(`Diameter Adjusted Base SFM: ${baseSFM}, Base IPT: ${baseIPT}`);
             console.log(`SFM Slider Value: ${sfmSlider.value}, Min: ${sfmSlider.min}, Max: ${sfmSlider.max}`);
             console.log(`IPT Slider Value (Scaled): ${iptSlider.value}, Min: ${iptSlider.min}, Max: ${iptSlider.max}, Step: ${iptSlider.step}`);
-            console.log(`IPT Actual Value: ${currentIPT}`);
+            console.log(`IPT Actual Value (from slider): ${currentIPT}`);
+            console.log(`Calculated RPM (Traditional): ${finalCalculatedRPM_Traditional.toFixed(0)}`);
+            console.log(`Calculated Feed Rate (Traditional): ${calculatedFeedRate_Traditional.toFixed(3)}`);
+            console.log(`Calculated RPM (Slotting): ${finalCalculatedRPMSlotting.toFixed(0)}`);
+            console.log(`Calculated Feed Rate (Slotting): ${calculatedFeedRateSlotting.toFixed(3)}`);
             console.log('-----------------------');
         }
 
@@ -444,16 +455,16 @@
                 updateButtonSelection('material-input', selectedMaterial);
 
                 // Set SFM slider to default for selected material and update display
-                sfmSlider.min = materialProperties[selectedMaterial].sfm.min;
-                sfmSlider.max = materialProperties[selectedMaterial].sfm.max;
-                sfmSlider.value = materialProperties[selectedMaterial].sfm.default;
+                sfmSlider.min = materialProperties[selectedMaterial].sfmSliderRange.min;
+                sfmSlider.max = materialProperties[selectedMaterial].sfmSliderRange.max;
+                sfmSlider.value = materialProperties[selectedMaterial].sfmSliderRange.default;
                 sfmDisplay.textContent = `${sfmSlider.value} SFM`;
 
                 // Set IPT slider to default for selected material and update display (using scaled values)
-                iptSlider.min = materialProperties[selectedMaterial].ipt.min;
-                iptSlider.max = materialProperties[selectedMaterial].ipt.max;
+                iptSlider.min = materialProperties[selectedMaterial].iptSliderRange.min;
+                iptSlider.max = materialProperties[selectedMaterial].iptSliderRange.max;
                 iptSlider.step = 1; // Step is 1 for scaled integer values
-                iptSlider.value = materialProperties[selectedMaterial].ipt.default;
+                iptSlider.value = materialProperties[selectedMaterial].iptSliderRange.default;
                 iptDisplay.textContent = `${(parseFloat(iptSlider.value) / IPT_SCALE_FACTOR).toFixed(4)}"`
                 
                 // Debug log for IPT slider properties after material change
@@ -504,16 +515,16 @@
             setDiameterSliderRangeAndValue();
             
             // Set initial SFM and IPT slider values and displays based on default material (aluminum)
-            sfmSlider.min = materialProperties[selectedMaterial].sfm.min;
-            sfmSlider.max = materialProperties[selectedMaterial].sfm.max;
-            sfmSlider.value = materialProperties[selectedMaterial].sfm.default;
+            sfmSlider.min = materialProperties[selectedMaterial].sfmSliderRange.min;
+            sfmSlider.max = materialProperties[selectedMaterial].sfmSliderRange.max;
+            sfmSlider.value = materialProperties[selectedMaterial].sfmSliderRange.default;
             sfmDisplay.textContent = `${sfmSlider.value} SFM`;
 
             // Initialize IPT slider with scaled values
-            iptSlider.min = materialProperties[selectedMaterial].ipt.min;
-            iptSlider.max = materialProperties[selectedMaterial].ipt.max;
+            iptSlider.min = materialProperties[selectedMaterial].iptSliderRange.min;
+            iptSlider.max = materialProperties[selectedMaterial].iptSliderRange.max;
             iptSlider.step = 1; // Step is 1 for scaled values
-            iptSlider.value = materialProperties[selectedMaterial].ipt.default;
+            iptSlider.value = materialProperties[selectedMaterial].iptSliderRange.default;
             iptDisplay.textContent = `${(parseFloat(iptSlider.value) / IPT_SCALE_FACTOR).toFixed(4)}"`
 
             // Debug log for initial IPT slider properties
