@@ -13,6 +13,7 @@ const origMaterialProperties = {
 // Global reduction factors for slotting/first pass, applied universally to all materials
 const globalSfmReductionFactor = 0.7; // Example: Reduce SFM by 30% for slotting
 const globalIptReductionFactor = 0.8; // Example: Reduce IPT by 80% for slotting
+const SMALL_TOOL_THRESHOLD = 0.2; // 1/8 inch
 
 
 // Machine type limitations

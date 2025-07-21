@@ -52,6 +52,15 @@ fraction {
 numer {
   border-bottom: 1px solid;
 }
+                        .warning-message {
+            background-color: #fffbeb; /* Light yellow background */
+            border-left: 4px solid #f59e0b; /* Orange left border */
+            color: #d97706; /* Darker orange text */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem; /* Space below the warning */
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -72,16 +81,16 @@ numer {
             <div>
                 <label class="block text-gray-700 text-lg font-semibold mb-3">Tool Diameter (in):</label>
                 <div id="diameter-input" class="flex flex-wrap justify-center sm:justify-start">
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.0787402">2mm<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.125"><fraction> <numer>1</numer>8</fraction>&quot;<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.157">4mm<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.25"><fraction> <numer>1</numer>4</fraction>&quot;<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.375"><fraction> <numer>3</numer>8</fraction>&quot;<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.5"><fraction> <numer>1</numer>2</fraction>&quot;<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.625"><fraction> <numer>5</numer>8</fraction>&quot;<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.75"><fraction> <numer>3</numer>4</fraction>&quot;<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.875"><fraction> <numer>7</numer>8</fraction>&quot;<button>
-                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="1">1&quot;<button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.0787402">2mm</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.125"><fraction> <numer>1</numer>8</fraction>&quot;</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.157">4mm</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.25"><fraction> <numer>1</numer>4</fraction>&quot;</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.375"><fraction> <numer>3</numer>8</fraction>&quot;</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.5"><fraction> <numer>1</numer>2</fraction>&quot;</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.625"><fraction> <numer>5</numer>8</fraction>&quot;</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.75"><fraction> <numer>3</numer>4</fraction>&quot;</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.875"><fraction> <numer>7</numer>8</fraction>&quot;</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="1">1&quot;</button>
                 </div>
             </div>
 
@@ -125,6 +134,11 @@ numer {
         <br />
         <!-- Output Section -->
         <h2 class="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-4">Calculated Values</h2>
+
+        <!-- Small Tool Warning Message -->
+        <div id="small-tool-warning" class="warning-message hidden">
+            <!-- Message will be inserted here by JavaScript -->
+        </div>
 
         <!-- Traditional Calculations Row -->
         <div class="flex items-center justify-between mb-2">
@@ -232,15 +246,31 @@ numer {
             // Calculate Slotting Feed Rate using the final (potentially capped) Slotting RPM
             const calculatedFeedRateSlotting = finalCalculatedRPMSlotting * selectedFlutes * iptSlotting;
             document.getElementById('output-feedrate-slotting').textContent = calculatedFeedRateSlotting.toFixed(1);
+
+            // --- Small Tool Warning Logic ---
+            var smallToolWarning = document.getElementById('small-tool-warning');
+                if (selectedDiameter <= SMALL_TOOL_THRESHOLD) {
+                    const depth20 = (selectedDiameter * 0.20).toFixed(4);
+                    const depth15 = (selectedDiameter * 0.15).toFixed(4);
+                    smallToolWarning.innerHTML = `<strong>Small Tool Warning:</strong> For tool diameters &le; ${SMALL_TOOL_THRESHOLD.toFixed(3)}", consider a depth of pass between ${depth15}" (15%) and ${depth20}" (20%) of the cutter diameter. Use with caution.`;
+                    smallToolWarning.classList.remove('hidden');
+                } else {
+                    smallToolWarning.classList.add('hidden');
+                }
+            
         }
 
         // Event listener for Tool Diameter buttons
         document.getElementById('diameter-input').addEventListener('click', (event) => {
-            if (event.target.tagName === 'BUTTON') {
-                selectedDiameter = parseFloat(event.target.dataset.value);
+             const clickedButton = event.target.closest('button');
+              if (clickedButton) {
+                const selectedValue = clickedButton.dataset.value;
+                console.log('Raw data-value from currentTarget:', selectedValue); // THIS IS THE KEY: See what this logs
+
+                selectedDiameter = parseFloat(selectedValue);
                 updateButtonSelection('diameter-input', selectedDiameter);
                 updateOutputs();
-            }
+             }
         });
 
         // Event listener for Material Type buttons

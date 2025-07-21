@@ -103,6 +103,16 @@
             max-width: 90%;
             width: 400px;
         }
+
+                .warning-message {
+            background-color: #fffbeb; /* Light yellow background */
+            border-left: 4px solid #f59e0b; /* Orange left border */
+            color: #d97706; /* Darker orange text */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem; /* Space below the warning */
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -183,6 +193,11 @@
         <br />
         <!-- Output Section -->
         <h2 class="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-4">Calculated Values</h2>
+
+        <!-- Small Tool Warning Message -->
+        <div id="small-tool-warning" class="warning-message hidden">
+            <!-- Message will be inserted here by JavaScript -->
+        </div>
 
         <!-- Traditional Calculations Row -->
         <div class="flex items-center justify-between mb-2">
@@ -390,6 +405,31 @@
             // Calculate Slotting Feed Rate using the final (potentially capped) Slotting RPM
             const calculatedFeedRateSlotting = finalCalculatedRPMSlotting * selectedFlutes * iptSlotting;
             document.getElementById('output-feedrate-slotting').textContent = calculatedFeedRateSlotting.toFixed(3);
+
+
+            // --- Small Tool Warning Logic ---
+            var smallToolWarning = document.getElementById('small-tool-warning');
+            if (selectedDiameterUnit === 'millimeters') {
+                // Convert threshold to mm if current unit is mm
+                const SMALL_TOOL_THRESHOLD_MM = SMALL_TOOL_THRESHOLD * INCH_TO_MM;
+                if (selectedDiameter <= SMALL_TOOL_THRESHOLD_MM) {
+                    const depth20 = (selectedDiameter * 0.20).toFixed(4);
+                    const depth15 = (selectedDiameter * 0.15).toFixed(4);
+                    smallToolWarning.innerHTML = `<strong>Small Tool Warning:</strong> For tool diameters &le; ${SMALL_TOOL_THRESHOLD.toFixed(3)}", consider a depth of pass between ${depth15}${selectedDiameterUnit === 'inches' ? '"' : 'mm'} (15%) and ${depth20}${selectedDiameterUnit === 'inches' ? '"' : 'mm'} (20%) of the cutter diameter. Use with caution.`;
+                    smallToolWarning.classList.remove('hidden');
+                } else {
+                    smallToolWarning.classList.add('hidden');
+                }
+            } else { // inches
+                if (selectedDiameter <= SMALL_TOOL_THRESHOLD) {
+                    const depth20 = (selectedDiameter * 0.20).toFixed(4);
+                    const depth15 = (selectedDiameter * 0.15).toFixed(4);
+                    smallToolWarning.innerHTML = `<strong>Small Tool Warning:</strong> For tool diameters &le; ${SMALL_TOOL_THRESHOLD.toFixed(3)}", consider a depth of pass between ${depth15}" (15%) and ${depth20}" (20%) of the cutter diameter. Use with caution.`;
+                    smallToolWarning.classList.remove('hidden');
+                } else {
+                    smallToolWarning.classList.add('hidden');
+                }
+            }
 
             // Log values for debugging
             console.log('--- Current Outputs ---');
