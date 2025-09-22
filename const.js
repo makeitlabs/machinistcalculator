@@ -171,3 +171,26 @@ function getDiameterAdjustedProperties(materialKey, currentDiameterInches) {
         };
     }
 }
+
+function getDepthOfCut(diameterInches) {
+  let recommended, maximum;
+
+  if (diameterInches < 0.040) {
+    // Very tiny endmills (<1.0 mm)
+    recommended = diameterInches * 0.10;
+    maximum     = diameterInches * 0.20;
+  } else if (diameterInches < 0.200) {
+    // Small endmills (<1/8")
+    recommended = diameterInches * 0.15;
+    maximum     = diameterInches * 0.25;
+  } else {
+    // Normal / larger endmills
+    recommended = diameterInches * 0.50;
+    maximum     = diameterInches * 1.00;
+  }
+
+  return {
+    recommended: recommended,
+    maximum: maximum
+  };
+}

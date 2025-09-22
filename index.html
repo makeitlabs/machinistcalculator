@@ -110,6 +110,7 @@ numer {
             <div>
                 <label class="block text-gray-700 text-lg font-semibold mb-3">Number of Flutes:</label>
                 <div id="flutes-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="1">1 Flute</button>
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="2">2 Flutes</button>
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="3">3 Flutes</button>
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="4">4 Flutes</button>
@@ -144,7 +145,7 @@ numer {
         <div class="flex items-center justify-between mb-2">
             <div>
                 <h3 class="text-lg sm:text-xl font-semibold text-gray-700" style="margin-bottom:0px">General Milling (Traditional)</h3>
-                <p class="text-sm sm:text-sm text-gray-700">Cut with steopver of 40-60% of tool</p>
+                <p id="stepovermessage" class="text-sm sm:text-sm text-gray-700">Cut with stepover of 40-60% of tool</p>
             </div>
             <img src="tradl.png" alt="Slotting Icon" class="w-12 h-auto xx-sm:w-16 sm:h-auto">
         </div>
@@ -163,6 +164,25 @@ numer {
             </div>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <!-- RPM Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Stepover:</label>
+                <div id="stepover" class="output-box text-blue-700 font-bold">0</div>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Depth of Cut (ZDOC):</label>
+                <div id="zdoc" class="output-box text-blue-700 font-bold">0</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Z Feed (Plunge Rate) IPM:</label>
+                <div id="zfeed" class="output-box text-blue-700 font-bold">0</div>
+            </div>
+        </div>
         <hr />
         <br />
         <!-- Slotting/First Pass Calculations Row -->
@@ -257,8 +277,16 @@ numer {
                 } else {
                     smallToolWarning.classList.add('hidden');
                 }
-            
+
+           // Stepover calculation and message 
+            var stepover = (selectedDiameter * 0.40)
+            var zdoc = getDepthOfCut(selectedDiameter);
+
+            document.getElementById('zdoc').textContent = zdoc.recommended.toFixed(3)+"\"";
+            document.getElementById('stepover').textContent = stepover.toFixed(3)+"\"";
+            document.getElementById('zfeed').textContent = (calculatedFeedRate * 0.25).toFixed(1);
         }
+        // end UpdateOutputs
 
         // Event listener for Tool Diameter buttons
         document.getElementById('diameter-input').addEventListener('click', (event) => {
