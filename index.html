@@ -79,8 +79,10 @@ numer {
         <div class="mb-8 space-y-6">
             <!-- Tool Diameter Input -->
             <div>
-                <label class="block text-gray-700 text-lg font-semibold mb-3">Tool Diameter (in):</label>
-                <div id="diameter-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <label class="block text-gray-700 text-lg font-semibold mb-3">Tool Diameter:</label>
+
+                    <!-- Preset Buttons -->
+                    <div id="diameter-input" class="flex flex-wrap gap-2 mb-2">
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.0787402">2mm</button>
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.125"><fraction> <numer>1</numer>8</fraction>&quot;</button>
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.157">4mm</button>
@@ -91,8 +93,20 @@ numer {
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.75"><fraction> <numer>3</numer>4</fraction>&quot;</button>
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="0.875"><fraction> <numer>7</numer>8</fraction>&quot;</button>
                     <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="1">1&quot;</button>
+                        <button id="other-btn" class="bg-blue-200 hover:bg-blue-300 text-blue-800 px-3 py-1">Other...</button>
+                    </div>
+
+                    <!-- Custom Input -->
+                    <div id="custom-diameter" class="hidden mt-2 flex items-center gap-2">
+                        <input id="custom-value" type="number" step="0.001" class="border rounded px-2 py-1 w-24" placeholder="Value">
+                        <select id="custom-unit" class="border rounded px-2 py-1">
+                            <option value="in">inches</option>
+                            <option value="mm">mm</option>
+                        </select>
+                        <button id="custom-submit" class="bg-green-200 hover:bg-green-300 text-green-800 px-3 py-1 rounded">Set</button>
+                        <button id="custom-cancel" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded">Cancel</button>
+                    </div>
                 </div>
-            </div>
 
             <!-- Material Type Input -->
             <div>
@@ -213,6 +227,9 @@ numer {
         let selectedMaterial = 'aluminum'; // Default material
         let selectedFlutes = 2; // Default flutes
         let selectedMachineType = 'bridgeport'; // Set default to match the selected button in HTML
+
+
+
 
         // Function to update the selected state of buttons within a group
         function updateButtonSelection(containerId, selectedValue) {
@@ -337,6 +354,45 @@ numer {
             updateButtonSelection('machine-type-input', selectedMachineType); // Set initial machine type selection
             updateOutputs(); // Perform initial calculation
         });
+
+        // New Custom Size Input
+
+            const buttons = document.querySelectorAll('#diameter-input .input-button');
+const otherBtn = document.getElementById('other-btn');
+const customDiv = document.getElementById('custom-diameter');
+const customSubmit = document.getElementById('custom-submit');
+const customCancel = document.getElementById('custom-cancel');
+
+buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('bg-gray-400')); // clear previous highlight
+        btn.classList.add('bg-gray-400'); // highlight current
+        customDiv.classList.add('hidden'); // hide custom input
+    });
+});
+
+otherBtn.addEventListener('click', () => {
+    customDiv.classList.remove('hidden');  // show custom input
+    buttons.forEach(b => b.classList.remove('bg-gray-400')); // clear button highlight
+});
+
+customSubmit.addEventListener('click', () => {
+    const value = parseFloat(document.getElementById('custom-value').value);
+    const unit = document.getElementById('custom-unit').value;
+    if (!isNaN(value)) {
+        const valueInInches = unit === 'mm' ? value / 25.4 : value;
+        //alert(`Custom diameter set: ${valueInInches.toFixed(4)} in`);
+        // Optionally store value in a hidden field or state
+        selectedDiameter = parseFloat(valueInInches);
+        //        updateButtonSelection('diameter-input', selectedDiameter);
+        updateOutputs();
+    }
+});
+
+customCancel.addEventListener('click', () => {
+    customDiv.classList.add('hidden'); // hide custom input
+});
+
     </script>
 </body>
 </html>
