@@ -220,6 +220,30 @@ numer {
                 <div id="output-feedrate-slotting" class="output-box text-red-700 font-bold">0</div>
             </div>
         </div>
+
+        <br />
+        <hr />
+        <br />
+        <!-- Slotting/First Pass Calculations Row -->
+        <div class="flex items-center justify-between mb-2">
+            <div>
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-700" style="margin-bottom:0px">Drilling</h3>
+            </div>
+            <img src="drilling.png" alt="Slotting Icon" class="w-12 h-auto xx-sm:w-16 sm:h-auto">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Slotting RPM Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Drilling RPM:</label>
+                <div id="output-rpm-drilling" class="output-box text-green-700 font-bold">0</div>
+            </div>
+
+            <!-- Slotting Feed Rate Output -->
+            <div>
+                <label class="block text-gray-700 text-md font-semibold mb-2">Z-Feed Rate (IPM):</label>
+                <div id="output-feedrate-drilling" class="output-box text-green-700 font-bold">0</div>
+            </div>
+        </div>
     </div>
     <script>
    // Variables to store selected input values
@@ -283,6 +307,11 @@ numer {
             // Calculate Slotting Feed Rate using the final (potentially capped) Slotting RPM
             const calculatedFeedRateSlotting = finalCalculatedRPMSlotting * selectedFlutes * iptSlotting;
             document.getElementById('output-feedrate-slotting').textContent = calculatedFeedRateSlotting.toFixed(1);
+
+            // Drills
+            var drills = getDrillSpeeds(selectedDiameter,selectedMaterial);
+            document.getElementById('output-rpm-drilling').textContent = drills.rpm.toFixed(0);
+            document.getElementById('output-feedrate-drilling').textContent = drills.ipm.toFixed(1);
 
             // --- Small Tool Warning Logic ---
             var smallToolWarning = document.getElementById('small-tool-warning');

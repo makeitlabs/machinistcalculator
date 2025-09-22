@@ -3,11 +3,11 @@
 
 // These were the original, base numbers
 const origMaterialProperties = {
-    aluminum: { sfm: 200, ipt: 0.002 },
-    stainless: { sfm: 72, ipt: 0.001 },
-    steel: { sfm: 90, ipt: 0.0007 },
-    brass: { sfm: 150, ipt: 0.002 },
-    plastic: { sfm: 400, ipt: 0.002 }
+    aluminum: { sfm: 200, ipt: 0.002, drill_sfm:200, drill_base_ipr: 0.004 },
+    stainless: { sfm: 72, ipt: 0.001, drill_sfm:30, drill_base_ipr: 0.003 },
+    steel: { sfm: 90, ipt: 0.0007, drill_sfm:80, drill_base_ipr: 0.005 },
+    brass: { sfm: 150, ipt: 0.002, drill_sfm:200, drill_base_ipr: 0.005 },
+    plastic: { sfm: 400, ipt: 0.002, drill_sfm:200, drill_base_ipr: 0.006 }
 };
 
 // Global reduction factors for slotting/first pass, applied universally to all materials
@@ -29,6 +29,7 @@ const IPT_SCALE_FACTOR = 10000;
 const materialProperties = {
     aluminum: {
         // SFM and IPT ranges for the sliders
+        drill_sfm:50, drill_base_ipr: 0.004,
         sfmSliderRange: { default: 200, min: 100, max: 1000 },
         iptSliderRange: { default: 20, min: 1, max: 40 }, // Scaled IPT range for slider (0.0001 to 0.004)
         // Specific diameter-dependent data (SFM and IPT)
@@ -47,6 +48,7 @@ const materialProperties = {
         ] // Removed .sort() - assuming data is pre-sorted
     },
     stainless: {
+        drill_sfm:30, drill_base_ipr: 0.003,
         sfmSliderRange: { default: 72, min: 30, max: 250 },
         iptSliderRange: { default: 10, min: 1, max: 20 },
         diameterData: [
@@ -61,6 +63,7 @@ const materialProperties = {
         ] // Removed .sort() - assuming data is pre-sorted
     },
     steel: {
+        drill_sfm:15, drill_base_ipr: 0.005,
         sfmSliderRange: { default: 90, min: 40, max: 200 },
         iptSliderRange: { default: 7, min: 1, max: 15 },
         diameterData: [
@@ -76,6 +79,7 @@ const materialProperties = {
     },
     brass: {
         // For materials without specific diameter data, use the default from their slider ranges
+        drill_sfm:40, drill_base_ipr: 0.005,
         sfmSliderRange: { default: 150, min: 75, max: 300 },
         iptSliderRange: { default: 20, min: 10, max: 40 }, // Scaled IPT
         diameterData: [
@@ -85,6 +89,7 @@ const materialProperties = {
         ] 
     },
     plastic: {
+        drill_sfm:25, drill_base_ipr: 0.006,
         sfmSliderRange: { default: 400, min: 200, max: 800 },
         iptSliderRange: { default: 20, min: 10, max: 40 }, // Scaled IPT
         diameterData: [
@@ -193,4 +198,17 @@ function getDepthOfCut(diameterInches) {
     recommended: recommended,
     maximum: maximum
   };
+}
+
+// Drill Base IPR comes from material table
+function getDrillSpeeds(diameterInches,materialKey) {
+        const material = materialProperties[materialKey];
+        var ipr = material.drill_base_ipr* (diameterInches / 0.25);
+        var rpm = (material.drill_sfm * 3.82) / diameterInches;
+        var ipm = rpm * ipr;
+          return {
+            ipr: ipr,
+            rpm: rpm,
+            ipm: ipm
+          };
 }
