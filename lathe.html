@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lathe RPM Calculator</title>
+    <!-- Custom Favicon (Lathing tool) -->
+    <link rel="icon" type="image/png" href="https://placehold.co/32x32/ff7b00/ffffff?text=LT">
+    <!-- Tailwind CSS CDN for easy styling and responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Ensure buttons are touch-friendly */
+        .input-button {
+            padding: 0.75rem 1.25rem; /* Ample padding for touch targets */
+            margin: 0.25rem; /* Space between buttons */
+            border-radius: 0.5rem; /* Rounded corners */
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .input-button.selected {
+            background-color: #f97316; /* Orange for selected button */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .input-button:active {
+            transform: scale(0.98); /* Slight press effect */
+        }
+        .output-box {
+            background-color: #e2e8f0; /* Lighter gray for output */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            min-height: 2.5rem; /* Ensure consistent height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem; /* text-lg */
+        }
+        /* Style for the SVG image */
+        .title-icon {
+            width: 2.5rem; 
+            height: 2.5rem;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+        /* Slider styling */
+        input[type="range"] {
+            -webkit-appearance: none; 
+            width: 100%;
+            height: 8px;
+            background: #cbd5e1; 
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+            margin-top: 0.75rem; 
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f97316; /* Orange thumb */
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg lg:max-w-xl relative">
+
+        <!-- MILLING APP HYPERLINK (Upper Left) -->
+        <a href="index.html" class="absolute top-4 left-4 p-2 pl-3 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 transition-colors duration-200 shadow-md flex items-center text-sm font-medium">
+            <!-- Simple Left Arrow Icon -->
+            <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+            </svg>
+            Milling
+        </a>
+        <!-- The href value '#milling-app-link' is a placeholder. Update it with the correct URL for the Milling app. -->
+
+        <!-- Title with SVG Icon (Lathe symbol) -->
+        <div class="flex items-center justify-center mb-6 pt-4">
+            <svg class="title-icon text-orange-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.75 3.01l-2.9-2.22c-.6-.46-1.42-.56-2.12-.28l-8.4 3.36C5.5 4.3 5 5.2 5 6.2v11.6c0 1 .5 1.9 1.33 2.27l8.4 3.36c.7.28 1.52.18 2.12-.28l2.9-2.22c.6-.46.9-1.1.9-1.78V4.8c0-.68-.3-1.32-.9-1.79zM15 15.5l-2.5-1.5 2.5-1.5v3zM15 10.5l-2.5-1.5 2.5-1.5v3zM15 5.5l-2.5-1.5 2.5-1.5v3zM8.5 7.5v-1l3 1.5-3 1.5v-1zm0 5v-1l3 1.5-3 1.5v-1zm0 5v-1l3 1.5-3 1.5v-1z"/>
+            </svg>
+            <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800">Lathe RPM Calculator</h1>
+        </div>
+
+        <!-- Input Section -->
+        <div class="mb-8 space-y-6">
+            <!-- Workpiece Diameter Input (Slider) -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Workpiece Diameter (D):</label>
+                <div class="flex items-center justify-between mb-2">
+                    <span id="diameter-display" class="text-orange-700 font-bold text-lg">2.0"</span>
+                    <!-- Unit toggle button - now direct action -->
+                    <button id="diameter-unit-btn" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-3 rounded-md transition-colors duration-200">Switch to Millimeters</button>
+                </div>
+                <input type="range" id="diameter-slider" min="0.5" max="4.0" step="0.01" value="2.0">
+            </div>
+
+            <!-- Material Type Input -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Material Type (Select to set SFM defaults):</label>
+                <div id="material-input" class="flex flex-wrap justify-center sm:justify-start">
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800 selected" data-value="aluminum">Aluminum</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="stainless">Stainless Steel</button>
+                    <button class="input-button bg-gray-200 hover:bg-gray-300 text-gray-800" data-value="steel">Steel (Mild)</button>
+                </div>
+            </div>
+
+            <!-- SFM Input (Slider) -->
+            <div>
+                <label class="block text-gray-700 text-lg font-semibold mb-3">Surface Feet per Minute (SFM):</label>
+                <span id="sfm-display" class="text-orange-700 font-bold text-lg">600 SFM</span>
+                <input type="range" id="sfm-slider" min="100" max="1000" step="1" value="600">
+            </div>
+        </div>
+
+        <!-- Output Section -->
+        <h2 class="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-4">Calculated RPM Values</h2>
+
+        <!-- Target RPM Row -->
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-700">Target RPM (100% SFM)</h3>
+            <img src="https://placehold.co/60x60/f97316/ffffff?text=Target" alt="Target RPM Icon" class="w-12 h-12 ml-2 flex-shrink-0">
+        </div>
+        <div class="grid grid-cols-1 mb-6">
+            <div id="output-rpm-target" class="output-box text-orange-700 font-bold text-2xl">0</div>
+        </div>
+
+        <!-- Conservative RPM Row -->
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-700">Conservative RPM (80% SFM)</h3>
+            <img src="https://placehold.co/60x60/ef4444/ffffff?text=Safe" alt="Conservative RPM Icon" class="w-12 h-12 ml-2 flex-shrink-0">
+        </div>
+        <div class="grid grid-cols-1">
+            <div id="output-rpm-conservative" class="output-box text-red-600 font-bold text-2xl">0</div>
+        </div>
+    </div>
+
+    <script>
+        // SFM defaults and slider ranges for lathe materials
+        const materialProperties = {
+            aluminum: {
+                sfmSliderRange: { default: 600, min: 300, max: 1000 },
+            },
+            stainless: {
+                sfmSliderRange: { default: 180, min: 100, max: 300 },
+            },
+            steel: {
+                sfmSliderRange: { default: 250, min: 150, max: 500 },
+            }
+        };
+
+        // Output reduction factor for the 'Conservative RPM' calculation
+        const CONSERVATIVE_FACTOR = 0.80;
+
+        // Conversion factors
+        const MM_TO_INCH = 1 / 25.4;
+        const INCH_TO_MM = 25.4;
+
+        // UI elements
+        const diameterSlider = document.getElementById('diameter-slider');
+        const diameterDisplay = document.getElementById('diameter-display');
+        const diameterUnitBtn = document.getElementById('diameter-unit-btn');
+        const sfmSlider = document.getElementById('sfm-slider');
+        const sfmDisplay = document.getElementById('sfm-display');
+
+        // Variables to store selected input values
+        let selectedDiameter = 2.0; // Default diameter in inches
+        let selectedDiameterUnit = 'inches'; // Default unit
+        let selectedMaterial = 'aluminum'; // Default material
+        
+        // Function to update the selected state of buttons within a group
+        function updateButtonSelection(containerId, selectedValue) {
+            const container = document.getElementById(containerId);
+            const buttons = container.querySelectorAll('button');
+            buttons.forEach(button => {
+                if (button.dataset.value === String(selectedValue)) {
+                    button.classList.add('selected');
+                } else {
+                    button.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Function to set diameter slider range and update the UI display
+        function setDiameterSliderRange() {
+            if (selectedDiameterUnit === 'inches') {
+                // Set range for inches (Max 4.0 inches per request)
+                diameterSlider.min = 0.5;
+                diameterSlider.max = 4.0;
+                diameterSlider.step = 0.01; // Increased precision
+            } else { // millimeters
+                // Set range for millimeters (Max 4.0 inches = 101.6 mm)
+                diameterSlider.min = 10.0;
+                diameterSlider.max = 101.6;
+                diameterSlider.step = 0.5;
+            }
+
+            // Ensure the converted selectedDiameter is within the new range
+            selectedDiameter = Math.max(
+                parseFloat(diameterSlider.min), 
+                Math.min(parseFloat(diameterSlider.max), selectedDiameter)
+            );
+            
+            // Set the slider value and update the display text
+            diameterSlider.value = selectedDiameter;
+            const unitText = selectedDiameterUnit === 'inches' ? '"' : 'mm';
+            diameterDisplay.textContent = `${selectedDiameter}${unitText}`;
+            diameterUnitBtn.textContent = `Switch to ${selectedDiameterUnit === 'inches' ? 'Millimeters' : 'Inches'}`;
+        }
+
+        // Function to perform calculations and update outputs
+        function updateOutputs() {
+            const currentSFM = parseFloat(sfmSlider.value);
+
+            // Ensure diameter is in inches for calculations: RPM = (SFM * 3.82) / D
+            let diameterInInches = selectedDiameter;
+            if (selectedDiameterUnit === 'millimeters') {
+                diameterInInches = selectedDiameter * MM_TO_INCH;
+            }
+
+            // Calculation: RPM = (SFM * 3.82) / D
+            let calculatedRPM = 0;
+            if (diameterInInches > 0) {
+                 calculatedRPM = (currentSFM * 3.82) / diameterInInches;
+            }
+
+            // --- Target RPM Calculations (100% SFM) ---
+            const targetRPM = Math.max(0, calculatedRPM);
+            document.getElementById('output-rpm-target').textContent = targetRPM.toFixed(0);
+
+            // --- Conservative RPM Calculations (80% SFM) ---
+            const conservativeRPM = Math.max(0, calculatedRPM * CONSERVATIVE_FACTOR);
+            document.getElementById('output-rpm-conservative').textContent = conservativeRPM.toFixed(0);
+        }
+
+        // --- Event Listeners ---
+
+        // Workpiece Diameter Slider
+        diameterSlider.addEventListener('input', () => {
+            // Use toFixed to prevent extreme floating point issues on the display
+            const diameterValue = selectedDiameterUnit === 'inches' ? parseFloat(diameterSlider.value).toFixed(2) : parseFloat(diameterSlider.value).toFixed(1);
+            selectedDiameter = parseFloat(diameterValue);
+            diameterDisplay.textContent = `${selectedDiameter}${selectedDiameterUnit === 'inches' ? '"' : 'mm'}`;
+            updateOutputs();
+        });
+
+        // Diameter Unit Toggle Button (no modal)
+        diameterUnitBtn.addEventListener('click', () => {
+            const oldUnit = selectedDiameterUnit;
+            selectedDiameterUnit = (oldUnit === 'inches') ? 'millimeters' : 'inches';
+            
+            // Convert selectedDiameter to the new unit
+            if (selectedDiameterUnit === 'inches') {
+                // Switching TO inches, convert from mm (round to 2 decimal places)
+                selectedDiameter = parseFloat((selectedDiameter * MM_TO_INCH).toFixed(2));
+            } else {
+                // Switching TO millimeters, convert from inches (round to 1 decimal place)
+                selectedDiameter = parseFloat((selectedDiameter * INCH_TO_MM).toFixed(1));
+            }
+            
+            setDiameterSliderRange(); // Update slider range and UI text
+            updateOutputs();
+        });
+
+        // Material Type Buttons (set SFM defaults and update sliders)
+        document.getElementById('material-input').addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                selectedMaterial = event.target.dataset.value;
+                updateButtonSelection('material-input', selectedMaterial);
+
+                const sfmProps = materialProperties[selectedMaterial].sfmSliderRange;
+
+                // Set SFM slider range and default value
+                sfmSlider.min = sfmProps.min;
+                sfmSlider.max = sfmProps.max;
+                sfmSlider.value = sfmProps.default; 
+                sfmDisplay.textContent = `${sfmSlider.value} SFM`;
+                
+                updateOutputs();
+            }
+        });
+
+        // SFM Slider
+        sfmSlider.addEventListener('input', () => {
+            sfmDisplay.textContent = `${sfmSlider.value} SFM`;
+            updateOutputs();
+        });
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial button selections
+            updateButtonSelection('material-input', selectedMaterial);
+            
+            // Set initial diameter slider range and value display (defaults to inches, max 4.0)
+            setDiameterSliderRange();
+            
+            // Set initial SFM slider values and displays based on default material (aluminum)
+            const sfmProps = materialProperties[selectedMaterial].sfmSliderRange;
+            sfmSlider.min = sfmProps.min;
+            sfmSlider.max = sfmProps.max;
+            sfmSlider.value = sfmProps.default; 
+            sfmDisplay.textContent = `${sfmSlider.value} SFM`;
+
+            updateOutputs(); // Perform initial calculation
+        });
+    </script>
+</body>
+</html>
+
